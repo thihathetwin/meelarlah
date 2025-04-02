@@ -1,4 +1,3 @@
-
 const schedule = [
   ["1.4.2025", "-", "A", "B", "C", "A", "B+C"],
   ["2.4.2025", "A", "B", "C", "A", "B", "C+A"],
@@ -41,8 +40,17 @@ const times = [
   "Next 01:00 to 05:00"
 ];
 
+function formatDateToDMY(dateStr) {
+  const date = new Date(dateStr);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 function findShifts() {
   const group = document.getElementById("groupInput").value.trim().toUpperCase();
+  const dateInput = document.getElementById("dateInput").value;
   const resultDiv = document.getElementById("result");
   resultDiv.innerHTML = "";
 
@@ -51,15 +59,20 @@ function findShifts() {
     return;
   }
 
-  let output = "";
-  schedule.forEach(entry => {
-    const date = entry[0];
-    entry.slice(1).forEach((val, i) => {
-      if (val.includes(group)) {
-        output += `${date} - ${times[i]}\n`;
-      }
-    });
-  });
+  if (!dateInput) {
+    resultDiv.textContent = "Please select a date.";
+    return;
+  }
 
-  resultDiv.textContent = output || "No shifts found for this group.";
+  const inputDate = formatDateToDMY(dateInput);
+  const entry = schedule.find(e => e[0] === inputDate);
+
+  if (!entry) {
+    resultDiv.textContent = "No schedule found for this date.";
+    return;
+  }
+
+  const shifts = entry.slice(1).map((val, i) => val.includes(group) ? times[i] : null).filter(Boolean);
+
+  resultDiv.textContent = shifts.length ? shifts.join("\n") : "No shifts found for this group and date.";
 }
